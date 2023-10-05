@@ -43,38 +43,58 @@ const item3 = new Item({
 // Put all items in an array
 const defaultItems = [item1, item2, item3]
 
-// Add the documents to the collection
-// (save the records to the table)
-Item.insertMany(defaultItems)
-  .then(() => {
-    console.log("Default documents have been added to the collection")
-  })
-  .catch(err => {
-    console.log(err)
-  })
-
-
-
 app.get("/", function(req, res) {
+  const day = date.getDate();
+  Item.find()
+    .then(result => {
+      if(result.length === 0){
+        // Add the documents to the collection
+        // (save the records to the table)
+        Item.insertMany(defaultItems)
+          .then(() => {
+            console.log("Default documents have been added to the collection")
+          })
+          .catch(err => {
+            console.log(err)
+          })
+          res.redirect("/")
+      } else {
+        res.render("list", {listTitle: day, newListItems: result})
+      }
+    })
+    .catch(err => {console.log(err)})
 
-const day = date.getDate();
 
-  res.render("list", {listTitle: day, newListItems: items});
 
 });
 
 app.post("/", function(req, res){
 
-  const item = req.body.newItem;
+  new Item({
+    name: req.body.newItem
+  }).save()
+  res.redirect("/")
 
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
-    res.redirect("/");
-  }
+  // if (req.body.list === "Work") {
+  //   workItems.push(item);
+  //   res.redirect("/work");
+  // } else {
+  //   items.push(item);
+  //   res.redirect("/");
+  // }
 });
+
+app.post("/delete", function(req, res){
+  const checkedItem = req.body.checkBox
+  console.log(checkedItem)
+  Item.findByIdAndRemove(checkedItem)
+  .then(result =>{
+    res.redirect("/")
+  })
+  .catch(err => {
+    console.log(err)
+  })
+})
 
 app.get("/work", function(req,res){
   res.render("list", {listTitle: "Work List", newListItems: workItems});
