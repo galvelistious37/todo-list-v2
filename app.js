@@ -23,25 +23,26 @@ const itemsSchema = new mongoose.Schema({
   }
 })
 
-// Create the mongoos model with Singular Collection name
+// Create the mongoose model with Singular Collection name
 // and schema as parameters
 const Item = mongoose.model("Item", itemsSchema)
 
 // Create mongo db documents (mongo version of db records)
 const item1 = new Item({
-  name: "Learn how to connect MongoDB to Node.js application"
-})
-
-const item2 = new Item({
-  name: "Make dinner"
-})
-
-const item3 = new Item({
-  name: "Chill"
+  name: "Default Task"
 })
 
 // Put all items in an array
-const defaultItems = [item1, item2, item3]
+const defaultItems = [item1]
+
+// Create the list schema
+const listSchema = new mongoose.Schema({
+  name: String,
+  items: [itemsSchema]
+})
+
+// Create the list model
+const List = mongoose.model("List", listSchema)
 
 app.get("/", function(req, res) {
   const day = date.getDate();
@@ -63,17 +64,52 @@ app.get("/", function(req, res) {
       }
     })
     .catch(err => {console.log(err)})
-
-
-
 });
+
+app.get("/:customListName", (req, res) => {
+  const day = date.getDate();
+  const customListName = req.params.customListName
+  
+  List.findOne({name: customListName})
+    .then((result) => {
+      if(result){
+        res.render("list", {listTitle: result.name, newListItems: result.items})
+      } else {
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        })
+        list.save()
+        res.redirect("/"+customListName)
+      }
+    })
+    .catch(err => {
+      console.log(err)
+    })
+})
 
 app.post("/", function(req, res){
 
-  new Item({
-    name: req.body.newItem
-  }).save()
-  res.redirect("/")
+  const listName = req.body.list
+  console.log(listName)
+
+  
+
+  List.findOne({name: listName})
+    .then((result) => {
+      if(result){
+        result.items.push(new Item({name: req.body.newItem}))
+        result.save()
+        res.redirect("/"+listName)
+      } else {
+        new Item({name: req.body.newItem}).save()
+        res.redirect("/")
+      }
+    })
+
+  // new Item({
+  //   name: req.body.newItem
+  // }).save()
 
   // if (req.body.list === "Work") {
   //   workItems.push(item);
