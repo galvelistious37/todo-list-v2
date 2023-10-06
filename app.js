@@ -14,7 +14,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 // Create a connection to mongo db
-mongoose.connect("mongodb://127.0.0.1:27017/todolistDB", {useNewUrlParser: true})
+// mongoose.connect("mongodb://127.0.0.1:27017/todolistDB", {useNewUrlParser: true})
+mongoose.connect("mongodb+srv://galvelistious37:eAEbKLKgumd9orA8@cluster0.uoierrh.mongodb.net/todolistDB", {useNewUrlParser: true})
 
 // Create the item schema
 const itemsSchema = new mongoose.Schema({
