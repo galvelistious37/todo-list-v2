@@ -4,6 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose")
 const date = require(__dirname + "/date.js");
+const _ = require("lodash")
 
 const app = express();
 
@@ -62,16 +63,16 @@ app.get("/", function(req, res) {
           res.redirect("/")
       } else {
         // Render list.ejs with all documents
-        res.render("list", {listTitle: day, newListItems: result})
+        res.render("list", {listTitle: "Today", newListItems: result})
       }
     })
     .catch(err => {console.log(err)})
 });
 
-// Get custome documents based on url parameter
+// Get custom documents based on url parameter
 app.get("/:customListName", (req, res) => {
   const day = date.getDate();
-  const customListName = req.params.customListName
+  const customListName = _.capitalize(req.params.customListName)
   
   // Check DB and see if there is a collection for customListName
   List.findOne({name: customListName})
@@ -97,43 +98,50 @@ app.get("/:customListName", (req, res) => {
 // Post a new task to a collection
 app.post("/", function(req, res){
   const listName = req.body.list
-  // Find a listName collection
-  List.findOne({name: listName})
-    .then((result) => {
-      if(result){
+
+  if(listName === "Today"){
+    // If collection = Today, add item to default list
+    new Item({name: req.body.newItem}).save()
+    res.redirect("/")
+  } else {
+    // Find the collection for listName
+    List.findOne({name: listName})
+      .then((result) => {
         // If collection exists, add new item to the result and load the /<collectionName> url
         result.items.push(new Item({name: req.body.newItem}))
         result.save()
         res.redirect("/"+listName)
-      } else {
-        // If collection does not exist, save new tast to default items collections
-        new Item({name: req.body.newItem}).save()
-        res.redirect("/")
-      }
-    })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
 });
 
 // Delete item from collection
 app.post("/delete", function(req, res){
   // Get item id from checkbox
   const checkedItem = req.body.checkBox
-  // Find that id and remove it from collection
-  Item.findByIdAndRemove(checkedItem)
-  .then(result =>{
-    res.redirect("/")
-  })
-  .catch(err => {
-    console.log(err)
-  })
+  // Get collection name from hidden input
+  const hiddenListVal = req.body.hiddenListName
+
+  if(hiddenListVal === "Today"){
+    // Delete from default items list
+    Item.findByIdAndRemove(checkedItem)
+      .then(result =>{res.redirect("/")})
+      .catch(err => {console.log(err)})
+  } else {
+    // Find the collections name
+    List.findOneAndUpdate({name: hiddenListVal},
+      {$pull: {items: {_id: checkedItem}}})
+      .then(result => {
+        console.log("Document removed from collection")
+        res.redirect("/"+hiddenListVal)
+      })
+      .catch(err => {console.log(err)})
+  }
 })
-
-app.get("/work", function(req,res){
-  res.render("list", {listTitle: "Work List", newListItems: workItems});
-});
-
-app.get("/about", function(req, res){
-  res.render("about");
-});
 
 app.listen(3000, function() {
   console.log("Server started on port 3000");
