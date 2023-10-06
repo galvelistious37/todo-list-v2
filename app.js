@@ -44,13 +44,14 @@ const listSchema = new mongoose.Schema({
 // Create the list model
 const List = mongoose.model("List", listSchema)
 
+// Load root - default documents
 app.get("/", function(req, res) {
   const day = date.getDate();
+  // Get all documents
   Item.find()
     .then(result => {
       if(result.length === 0){
-        // Add the documents to the collection
-        // (save the records to the table)
+        // If not documents, add default document and load the page again
         Item.insertMany(defaultItems)
           .then(() => {
             console.log("Default documents have been added to the collection")
@@ -60,21 +61,26 @@ app.get("/", function(req, res) {
           })
           res.redirect("/")
       } else {
+        // Render list.ejs with all documents
         res.render("list", {listTitle: day, newListItems: result})
       }
     })
     .catch(err => {console.log(err)})
 });
 
+// Get custome documents based on url parameter
 app.get("/:customListName", (req, res) => {
   const day = date.getDate();
   const customListName = req.params.customListName
   
+  // Check DB and see if there is a collection for customListName
   List.findOne({name: customListName})
     .then((result) => {
       if(result){
+        // If there is a collection, render list.ejs with collectionList documents
         res.render("list", {listTitle: result.name, newListItems: result.items})
       } else {
+        // No collection, create one and add a default task. Refresh the page
         const list = new List({
           name: customListName,
           items: defaultItems
@@ -88,41 +94,30 @@ app.get("/:customListName", (req, res) => {
     })
 })
 
+// Post a new task to a collection
 app.post("/", function(req, res){
-
   const listName = req.body.list
-  console.log(listName)
-
-  
-
+  // Find a listName collection
   List.findOne({name: listName})
     .then((result) => {
       if(result){
+        // If collection exists, add new item to the result and load the /<collectionName> url
         result.items.push(new Item({name: req.body.newItem}))
         result.save()
         res.redirect("/"+listName)
       } else {
+        // If collection does not exist, save new tast to default items collections
         new Item({name: req.body.newItem}).save()
         res.redirect("/")
       }
     })
-
-  // new Item({
-  //   name: req.body.newItem
-  // }).save()
-
-  // if (req.body.list === "Work") {
-  //   workItems.push(item);
-  //   res.redirect("/work");
-  // } else {
-  //   items.push(item);
-  //   res.redirect("/");
-  // }
 });
 
+// Delete item from collection
 app.post("/delete", function(req, res){
+  // Get item id from checkbox
   const checkedItem = req.body.checkBox
-  console.log(checkedItem)
+  // Find that id and remove it from collection
   Item.findByIdAndRemove(checkedItem)
   .then(result =>{
     res.redirect("/")
