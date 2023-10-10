@@ -1,10 +1,34 @@
 <%- include("header") -%>
-
-  <div class="box" id="heading">
-    <h1> <%= listTitle %> </h1>
+<section="header-section">
+  <div class="container">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <div class="col-md-3 mb-2 mb-md-0">
+            <a href="/" class="d-inline-flex link-body-emphasis text-decoration-none">
+                <img src="/images/ToDoList.png" alt="to do list" class="header-img" />
+            </a>
+        </div>
+  
+        <div class="flex-container">
+          <div class="flex-card">
+            <h1> <%= listTitle %> </h1>
+            <form action="/" method="post">
+              <input type="text" name="newItem" placeholder="New Item" autocomplete="off" required>
+              <button type="submit" name="list" value="<%= listTitle %>">+</button>
+            </form>
+          </div>
+      </div>
+  
+        <div  class="col-md-3 text-end">
+            <a href="/" class="d-inline-flex link-body-emphasis text-decoration-none">
+                <img src="/images/ToDoList.png" alt="to do list" class="header-img remove-small" />
+            </a>
+        </div>
+      </header>
   </div>
+</section>
 
-  <div class="box">
+<div class="flex-container">
+  <div class="todo-container">    
     <% newListItems.forEach((item) => { %>
       <form action="/delete" method="post">
         <div class="item">
@@ -15,10 +39,8 @@
       </form>
     <% }) %>
 
-      <form class="item" action="/" method="post">
-        <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
-        <button type="submit" name="list" value="<%= listTitle %>">+</button>
-      </form>
+    
   </div>
+</div>
 
 <%- include("footer") -%>
