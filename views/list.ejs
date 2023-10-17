@@ -8,14 +8,24 @@
             <img src="/images/ToDoList.png" alt="to do list" class="header-img" />
         </a>
     </div>
-    <!-- Header Title and New Task text box -->
+    <!-- Header Title, New List text box, and Dropdown of available lists -->
     <div class="flex-container">
-      <div class="flex-card">
-        <h1> <%= listTitle %> </h1>
-        <form action="/" method="post">
-          <input type="text" name="newItem" placeholder="New Item" autocomplete="off" required>
-          <button type="submit" name="list" value="<%= listTitle %>">+</button>
+      <div class="flex-card pb-3">
+        <h1> <%= listTitle %> </h1>    
+        <form action="/newList" method="post">
+          <input type="text" name="newList" placeholder="New List" autocomplete="off" required>
+          <button type="submit">+</button>
         </form>
+
+        <form action="/list" method="post">
+          <select id="ddListId" name="ddList">
+            <% allLists.forEach((list) => {%>
+              <option value="<%= list %>"><%= list %></option>
+            <% }) %>
+          </select>
+          <button type="submit">Get</button>
+        </form>
+
       </div>
     </div>
     <!-- Right image-->
@@ -28,7 +38,11 @@
 </div>
 <!-- Main body sections-->
 <div class="flex-container">
-  <div class="todo-container">    
+  <div class="todo-container">   
+    <form action="/" method="post">
+      <input type="text" name="newItem" placeholder="New Item" autocomplete="off" required>
+      <button type="submit" name="list" value="<%= listTitle %>">+</button>
+    </form>
     <% newListItems.forEach((item) => { %>
       <form action="/delete" method="post">
         <div class="item">
