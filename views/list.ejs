@@ -12,19 +12,18 @@
     <div class="flex-container">
       <div class="flex-card pb-3">
         <h1> <%= listTitle %> </h1>    
-        <form action="/" method="post">
-          <input type="text" name="newItem" placeholder="New Item" autocomplete="off" required>
-          <button type="submit" name="list" value="<%= listTitle %>">+</button>
+        <form action="/newList" method="post">
+          <input type="text" name="newList" placeholder="New List" autocomplete="off" required>
+          <button type="submit" name="newList" value="<%= listTitle %>">+</button>
         </form>
 
         <form action="/list" method="post">
-          <label for="ddList">Choose another Todo List:</label>
           <select id="ddListId" name="ddList">
             <% allLists.forEach((list) => {%>
               <option value="<%= list %>"><%= list %></option>
             <% }) %>
           </select>
-          <button type="submit">+</button>
+          <button type="submit">Get</button>
         </form>
 
       </div>

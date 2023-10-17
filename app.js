@@ -10,10 +10,29 @@ const app = express();
 
 app.set('view engine', 'ejs');
 
+
+
+let lists = []
+const getAllLists =  function (req, res, next){
+  List.find({},{_id: 0, name: 1}).then(result => {
+    result.forEach((list) => {
+      if(!lists.includes(list.name)){
+        console.log(`Adding ${list.name} to lists`)
+        lists.push(list.name)
+      }
+    })
+    console.log("Called 1")
+    console.log("lists: " + lists)
+  }).catch(err => {
+    console.log(err)
+  })
+  next()
+}
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
+app.use(getAllLists)
 
-let lists = ["work", "Play"]
 
 // Create a connection to mongo db
 mongoose.connect("mongodb://127.0.0.1:27017/todolistDB", {useNewUrlParser: true})
@@ -50,9 +69,6 @@ const List = mongoose.model("List", listSchema)
 
 // Load root - default documents
 app.get("/", function(req, res) {
-
-  // let lists = getAllLists()
-
   const day = date.getDate();
   // Get all documents
   Item.find()
@@ -73,6 +89,7 @@ app.get("/", function(req, res) {
       }
     })
     .catch(err => {console.log(err)})
+  
 });
 
 // Get custom documents based on url parameter
@@ -80,7 +97,6 @@ app.get("/:customListName", (req, res) => {
   const day = date.getDate();
   const customListName = _.capitalize(req.params.customListName)
   
-  console.log("wut2?")
   // Check DB and see if there is a collection for customListName
   List.findOne({name: customListName})
     .then((result) => {
@@ -106,19 +122,14 @@ app.get("/:customListName", (req, res) => {
 // Get custom documents based on url parameter
 app.post("/list", (req, res) => {
   const day = date.getDate();
-  let testVal = req.query.ddList
-  console.log(testVal)
   const customListName = _.capitalize(req.body.ddList)
-  console.log(req.body.ddList)
-  console.log("customListName: ")
-  console.log(customListName)
   
   // Check DB and see if there is a collection for customListName
   List.findOne({name: customListName})
     .then((result) => {
       if(result){
         // If there is a collection, render list.ejs with collectionList documents
-        res.render("list", {listTitle: result.name, allLists: lists, newListItems: result.items})
+        res.redirect("/"+customListName)
       } else {
         // No collection, create one and add a default task. Refresh the page
         const list = new List({
@@ -126,7 +137,6 @@ app.post("/list", (req, res) => {
           items: defaultItems
         })
         list.save()
-        console.log("Wut?")
         res.redirect("/"+customListName)
       }
     })
@@ -190,10 +200,3 @@ app.listen(3000, function() {
   console.log("Server started on port 3000");
 });
 
-async function getAllLists(){
-  return await List.find({},{_id: 0, name: 1})
-  // let someList = await List.find({},{_id: 0, name: 1})
-  // someList.forEach((list) => {
-  //   console.log(list.name)
-  // })
-}
