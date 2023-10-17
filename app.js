@@ -10,9 +10,11 @@ const app = express();
 
 app.set('view engine', 'ejs');
 
-
-
+// list to hold all todo list names from the database
 let lists = []
+
+// Populate the lists with todo list namesm from the 
+// database as a middleware method call
 const getAllLists =  function (req, res, next){
   List.find({},{_id: 0, name: 1}).then(result => {
     result.forEach((list) => {
@@ -21,8 +23,6 @@ const getAllLists =  function (req, res, next){
         lists.push(list.name)
       }
     })
-    console.log("Called 1")
-    console.log("lists: " + lists)
   }).catch(err => {
     console.log(err)
   })
@@ -35,8 +35,8 @@ app.use(getAllLists)
 
 
 // Create a connection to mongo db
-mongoose.connect("mongodb://127.0.0.1:27017/todolistDB", {useNewUrlParser: true})
-// mongoose.connect("mongodb+srv://galvelistious37:eAEbKLKgumd9orA8@cluster0.uoierrh.mongodb.net/todolistDB", {useNewUrlParser: true})
+// mongoose.connect("mongodb://127.0.0.1:27017/todolistDB", {useNewUrlParser: true})
+mongoose.connect("mongodb+srv://galvelistious37:eAEbKLKgumd9orA8@cluster0.uoierrh.mongodb.net/todolistDB", {useNewUrlParser: true})
 
 // Create the item schema
 const itemsSchema = new mongoose.Schema({
@@ -118,8 +118,8 @@ app.get("/:customListName", (req, res) => {
     })
 })
 
+// Get the value from newList text box and redirect to /<textValue>
 app.post("/newList", (req, res) => {
-  console.log(req.body.newList)
   res.redirect("/"+req.body.newList)
 })
 
@@ -148,8 +148,6 @@ app.post("/list", (req, res) => {
       console.log(err)
     })
 })
-
-
 
 
 // Post a new task to a collection
