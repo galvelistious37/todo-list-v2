@@ -118,6 +118,10 @@ app.get("/:customListName", (req, res) => {
     })
 })
 
+app.post("/newList", (req, res) => {
+  console.log(req.body.newList)
+  res.redirect("/"+req.body.newList)
+})
 
 // Get custom documents based on url parameter
 app.post("/list", (req, res) => {
